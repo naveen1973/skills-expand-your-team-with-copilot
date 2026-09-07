@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("activity-search");
   const searchButton = document.getElementById("search-button");
   const categoryFilters = document.querySelectorAll(".category-filter");
+  const difficultyFilters = document.querySelectorAll(".difficulty-filter");
   const dayFilters = document.querySelectorAll(".day-filter");
   const timeFilters = document.querySelectorAll(".time-filter");
 
@@ -37,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // State for activities and filters
   let allActivities = {};
   let currentFilter = "all";
+  let currentDifficulty = "all";
   let searchQuery = "";
   let currentDay = "";
   let currentTimeRange = "";
@@ -363,7 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return "academic";
   }
 
-  // Function to fetch activities from API with optional day and time filters
+  // Function to fetch activities from API with optional day, time, and difficulty filters
   async function fetchActivities() {
     // Show loading skeletons first
     showLoadingSkeletons();
@@ -376,6 +378,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentDay) {
         queryParams.push(`day=${encodeURIComponent(currentDay)}`);
       }
+
+      queryParams.push(
+        `difficulty=${encodeURIComponent(currentDifficulty)}`
+      );
 
       // Handle time range filter
       if (currentTimeRange) {
@@ -523,6 +529,11 @@ document.addEventListener("DOMContentLoaded", () => {
       ${tagHtml}
       <h4>${name}</h4>
       <p>${details.description}</p>
+      ${
+        details.difficulty
+          ? `<p><strong>Difficulty:</strong> ${details.difficulty}</p>`
+          : ""
+      }
       <p class="tooltip">
         <strong>Schedule:</strong> ${formattedSchedule}
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
@@ -652,6 +663,17 @@ document.addEventListener("DOMContentLoaded", () => {
       // Update current filter and display filtered activities
       currentFilter = button.dataset.category;
       displayFilteredActivities();
+    });
+  });
+
+  // Add event listeners to difficulty filter buttons
+  difficultyFilters.forEach((button) => {
+    button.addEventListener("click", () => {
+      difficultyFilters.forEach((btn) => btn.classList.remove("active"));
+      button.classList.add("active");
+
+      currentDifficulty = button.dataset.difficulty;
+      fetchActivities();
     });
   });
 
