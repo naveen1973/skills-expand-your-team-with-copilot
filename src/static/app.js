@@ -528,6 +528,37 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
+      <div class="share-buttons">
+        <span class="share-label">Share:</span>
+        <button
+          type="button"
+          class="share-button"
+          data-share="email"
+          title="Share via Email"
+          aria-label="Share ${name} via Email"
+        >✉️</button>
+        <button
+          type="button"
+          class="share-button"
+          data-share="whatsapp"
+          title="Share on WhatsApp"
+          aria-label="Share ${name} on WhatsApp"
+        >💬</button>
+        <button
+          type="button"
+          class="share-button"
+          data-share="twitter"
+          title="Share on X (Twitter)"
+          aria-label="Share ${name} on X (Twitter)"
+        >🐦</button>
+        <button
+          type="button"
+          class="share-button"
+          data-share="copy"
+          title="Copy Link"
+          aria-label="Copy link to ${name}"
+        >🔗</button>
+      </div>
       <div class="participants-list">
         <h5>Current Participants:</h5>
         <ul>
@@ -570,6 +601,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       </div>
     `;
+
+    // Add click handlers for share buttons
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        handleShare(button.dataset.share, name, formattedSchedule);
+      });
+    });
 
     // Add click handlers for delete buttons
     const deleteButtons = activityCard.querySelectorAll(".delete-participant");
@@ -797,6 +837,53 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     );
+  }
+
+  // Handle sharing an activity via email, WhatsApp, X (Twitter), or copy link
+  function handleShare(shareType, activityName, formattedSchedule) {
+    const pageUrl = window.location.href.split("?")[0].split("#")[0];
+    const shareUrl = `${pageUrl}?activity=${encodeURIComponent(activityName)}`;
+    const shareText = `Check out "${activityName}" at Mergington High School! ${formattedSchedule}`;
+
+    switch (shareType) {
+      case "email":
+        window.location.href = `mailto:?subject=${encodeURIComponent(
+          `Join me for ${activityName}!`
+        )}&body=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`;
+        break;
+      case "whatsapp":
+        window.open(
+          `https://wa.me/?text=${encodeURIComponent(
+            `${shareText} ${shareUrl}`
+          )}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
+        break;
+      case "twitter":
+        window.open(
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+            shareText
+          )}&url=${encodeURIComponent(shareUrl)}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
+        break;
+      case "copy":
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(shareUrl)
+            .then(() => showMessage("Link copied to clipboard!", "success"))
+            .catch(() =>
+              showMessage("Could not copy link. Please try again.", "error")
+            );
+        } else {
+          showMessage("Copying is not supported in this browser.", "error");
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   // Show message function
